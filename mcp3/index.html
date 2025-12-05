@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mcp3测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="file"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #result { margin-top: 20px; text-align: center; display: none; }
+        #loading { display: none; text-align: center; margin-top: 20px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .tips { font-size: 12px; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎬 mcp3测试 </h1>
+    
+    <form id="vlogForm">
+        <div class="form-group">
+            <label>1. 上传图片 (支持多选)</label>
+            <input type="file" id="images" name="images" accept="image/*" multiple required>
+            <div class="tips">按住 Ctrl 或 Shift 可选择多张图片</div>
+        </div>
+
+        <div class="form-group">
+            <label>2. 上传背景音乐</label>
+            <input type="file" id="audio" name="audio" accept="audio/*" required>
+        </div>
+
+        <div class="form-group">
+            <label>3. 字幕 (可选)</label>
+            <textarea id="captions" placeholder='例如: ["这是第一张", "这是第二张", "结尾"]' rows="4"></textarea>
+            <div class="tips">请输入 JSON 数组格式的字符串</div>
+        </div>
+
+        <button type="submit" id="submitBtn">开始生成视频</button>
+    </form>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>正在拼命渲染中，请稍候... (可能需要几十秒)</p>
+    </div>
+
+    <div id="result">
+        <h3>✨ 生成成功！</h3>
+        <video id="videoPlayer" controls width="100%" style="max-width: 640px; border-radius: 8px;">
+            Your browser does not support the video tag.
+        </video>
+        <br><br>
+        <a id="downloadLink" href="#" download="my_vlog.mp4">
+            <button style="width: auto; background-color: #28a745;">📥 下载视频</button>
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('vlogForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const images = document.getElementById('images').files;
+        const audio = document.getElementById('audio').files[0];
+        const captions = document.getElementById('captions').value;
+        const btn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+
+        if (images.length === 0 || !audio) {
+            alert("请至少上传一张图片和一个音频文件！");
+            return;
+        }
+
+        // 简单的 JSON 校验
+        if (captions.trim()) {
+            try {
+                JSON.parse(captions);
+            } catch (e) {
+                alert("字幕格式错误！必须是合法的 JSON 数组，例如: [\"文字1\", \"文字2\"]");
+                return;
+            }
+        }
+
+        // 准备数据
+        const formData = new FormData();
+        for (let i = 0; i < images.length; i++) {
+            formData.append('images', images[i]);
+        }
+        formData.append('audio', audio);
+        if (captions.trim()) {
+            formData.append('captions', captions);
+        }
+
+        // UI 状态更新
+        btn.disabled = true;
+        btn.textContent = "生成中...";
+        loading.style.display = 'block';
+        result.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/auto_vlog', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || '生成失败');
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            
+            // 显示结果
+            const videoPlayer = document.getElementById('videoPlayer');
+            const downloadLink = document.getElementById('downloadLink');
+            
+            videoPlayer.src = url;
+            downloadLink.href = url;
+            
+            result.style.display = 'block';
+        } catch (error) {
+            alert("❌ 发生错误: " + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "开始生成视频";
+            loading.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>

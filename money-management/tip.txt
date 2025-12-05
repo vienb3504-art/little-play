@@ -1,0 +1,50 @@
+**Role:** 你是一位资深的 Python 后端架构师，擅长使用 FastAPI 构建支持多租户（Multi-tenancy）的微服务。
+
+**Goal:** 请为我编写一个“智能校园记账助手”的后端服务。该服务将对接腾讯云智能体，并需要支持**多用户数据隔离**。
+
+**Tech Stack:**
+*   **Language:** Python 3.9+
+*   **Framework:** FastAPI
+*   **Database:** SQLite (使用 SQLAlchemy ORM)
+*   **Data Validation:** Pydantic
+
+**Requirements:**
+
+1.  **项目结构:** 请按以下文件结构输出代码：
+    *   `database.py`: 数据库连接。
+    *   `models.py`: 数据库表结构。
+    *   `schemas.py`: Pydantic 模型。
+    *   `crud.py`: 数据库操作逻辑。
+    *   `main.py`: API 路由。
+    *   `requirements.txt`: 依赖包。
+
+2.  **核心业务实体 (Expense) & 用户隔离:**
+    表名 `expenses`，包含字段：
+    *   `id`: Integer, PK.
+    *   `user_id`: String, Index=True. (**核心字段**：用于区分不同用户，不能为空)
+    *   `amount`: Float.
+    *   `category`: String.
+    *   `item_name`: String.
+    *   `transaction_date`: DateTime.
+    *   `created_at`: DateTime.
+
+3.  **API 接口设计 (强制携带 user_id):**
+    **注意：** 所有的 API 请求体（Body）或查询参数（Query）中，**必须**包含 `user_id`。
+
+    *   `POST /expenses/` (记账):
+        *   Request Body: `{"user_id": "...", "amount": 20, "category": "餐饮", ...}`
+        *   逻辑：将数据存入数据库，必须保存 `user_id`。
+
+    *   `GET /expenses/` (查账):
+        *   Query Params: `user_id` (Required), `start_date`, `end_date`.
+        *   逻辑：**只查询该 `user_id` 下的记录**。严禁返回其他用户的数据。
+
+    *   `GET /report/weekly` (周报):
+        *   Query Params: `user_id` (Required).
+        *   逻辑：统计该用户的消费情况。
+
+4.  **CRUD 逻辑要求:**
+    *   在 `crud.py` 中的所有查询函数（select），必须加上 `.filter(models.Expense.user_id == user_id)` 的过滤条件。
+
+5.  **Let's verify:**
+    请在生成代码后，简要说明在 FastAPI 文档中如何模拟两个不同用户进行测试。
