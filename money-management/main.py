@@ -9,6 +9,7 @@ import logging
 
 import models, schemas, crud
 from database import SessionLocal, engine
+import analysis_service
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -71,3 +72,51 @@ def read_weekly_report(
         "summary": stats,
         "total_expense": total_expense
     }
+
+@app.get("/analysis/visual_report")
+def get_visual_report(
+    user_id: str = Query(..., description="User ID"),
+    db: Session = Depends(get_db)
+):
+    """
+    Generates a visual report (Pie Chart + Line Chart) and returns Base64 image.
+    """
+    # Fetch all expenses for the user (or could be filtered by date)
+    expenses = crud.get_expenses(db, user_id=user_id)
+    
+    # Convert to format expected by analysis_service
+    expense_list = []
+    for e in expenses:
+        expense_list.append({
+            "date": e.transaction_date,
+            "item": e.item_name,
+            "amount": e.amount,
+            "category": e.category
+        })
+        
+    image_base64 = analysis_service.generate_visual_report(expense_list)
+    return {"image_base64": image_base64}
+
+@app.get("/analysis/toxic_prediction")
+def get_toxic_prediction(
+    user_id: str = Query(...),
+    budget: float = Query(2000.0, description="Monthly budget target"),
+    db: Session = Depends(get_db)
+):
+    """
+    Generates a toxic prediction of month-end spending.
+    """
+    # Fetch expenses (analysis service filters for current month internally)
+    expenses = crud.get_expenses(db, user_id=user_id)
+    
+    expense_list = []
+    for e in expenses:
+        expense_list.append({
+            "date": e.transaction_date,
+            "item": e.item_name,
+            "amount": e.amount,
+            "category": e.category
+        })
+        
+    report = analysis_service.toxic_prediction(expense_list, budget)
+    return {"report": report}
