@@ -11,6 +11,11 @@ import models, schemas, crud
 from database import SessionLocal, engine
 import analysis_service
 
+from fastapi.staticfiles import StaticFiles
+import base64
+import os
+import uuid
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,6 +23,11 @@ logger = logging.getLogger(__name__)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Smart Campus Accounting Assistant")
+
+# Mount static directory for image serving
+# Ensure static directory exists
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Enable CORS
 app.add_middleware(
@@ -75,11 +85,13 @@ def read_weekly_report(
 
 @app.get("/analysis/visual_report")
 def get_visual_report(
+    request: Request,
     user_id: str = Query(..., description="User ID"),
     db: Session = Depends(get_db)
 ):
     """
-    Generates a visual report (Pie Chart + Line Chart) and returns Base64 image.
+    Generates a visual report and returns a URL to the image.
+    Optimized for AI Agents: Returns a URL instead of Base64 to save tokens.
     """
     # Fetch all expenses for the user (or could be filtered by date)
     expenses = crud.get_expenses(db, user_id=user_id)
@@ -95,7 +107,33 @@ def get_visual_report(
         })
         
     image_base64 = analysis_service.generate_visual_report(expense_list)
-    return {"image_base64": image_base64}
+    
+    if not image_base64:
+        return {"image_url": "", "message": "No data available to generate report."}
+
+    # Save image to static directory
+    # Use a unique filename or overwrite based on user_id? 
+    # For agents, unique is better to avoid caching issues, but we'll use user_id + timestamp for simplicity
+    filename = f"report_{user_id}_{int(datetime.now().timestamp())}.png"
+    file_path = os.path.join("static", filename)
+    
+    try:
+        image_data = base64.b64decode(image_base64)
+        with open(file_path, "wb") as f:
+            f.write(image_data)
+            
+        # Construct full URL
+        # Note: In production (Cloud), this should be the public domain.
+        base_url = str(request.base_url).rstrip("/")
+        image_url = f"{base_url}/static/{filename}"
+        
+        return {
+            "image_url": image_url, 
+            "tips": "Agent should render this as a Markdown image: ![](" + image_url + ")"
+        }
+    except Exception as e:
+        logger.error(f"Failed to save image: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate image file")
 
 @app.get("/analysis/toxic_prediction")
 def get_toxic_prediction(
@@ -119,4 +157,4 @@ def get_toxic_prediction(
         })
         
     report = analysis_service.toxic_prediction(expense_list, budget)
-    return {"report": report}
+    return {"report": report}

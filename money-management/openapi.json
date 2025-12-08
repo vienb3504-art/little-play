@@ -1,0 +1,334 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "智能校园记账助手",
+    "version": "1.0.0",
+    "description": "基于FastAPI构建的校园记账助手后端服务，支持多租户数据隔离，提供记账、查账、可视化周报生成及毒舌财运预测功能。"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:9090",
+      "description": "本地开发服务器"
+    }
+  ],
+  "paths": {
+    "/expenses/": {
+      "post": {
+        "summary": "创建消费记录",
+        "description": "创建一条新的消费记录。必须包含用户ID以实现数据隔离。",
+        "operationId": "create_expense",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id",
+                  "amount",
+                  "category",
+                  "item-name"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "description": "用户唯一标识"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "消费金额"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "消费类别 (如：餐饮, 交通, 学习)"
+                  },
+                  "item-name": {
+                    "type": "string",
+                    "description": "具体消费项目名称"
+                  },
+                  "transaction_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "交易时间 (ISO格式)，默认当前时间"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功创建记录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "description": "记录ID"
+                    },
+                    "user_id": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "item_name": {
+                      "type": "string"
+                    },
+                    "transaction_date": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "验证错误 (如缺少必填字段)"
+          }
+        }
+      },
+      "get": {
+        "summary": "查询消费记录",
+        "description": "查询指定用户的消费记录列表，支持按日期范围筛选。",
+        "operationId": "read_expenses",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户唯一标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "开始日期 (ISO格式)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "结束日期 (ISO格式)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功的响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer"
+                      },
+                      "user_id": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "type": "number",
+                        "format": "float"
+                      },
+                      "category": {
+                        "type": "string"
+                      },
+                      "item_name": {
+                        "type": "string"
+                      },
+                      "transaction_date": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "验证错误"
+          }
+        }
+      }
+    },
+    "/report/weekly": {
+      "get": {
+        "summary": "周报统计",
+        "description": "获取按类别聚合的消费统计数据。",
+        "operationId": "read_weekly_report",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户唯一标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "统计成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user_id": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "total": {
+                            "type": "number",
+                            "format": "float"
+                          }
+                        }
+                      }
+                    },
+                    "total_expense": {
+                      "type": "number",
+                      "format": "float"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "验证错误"
+          }
+        }
+      }
+    },
+    "/analysis/visual_report": {
+      "get": {
+        "summary": "可视化周报",
+        "description": "生成包含“消费占比”和“每日趋势”的赛博朋克风格可视化报表。返回图片URL，适配智能体平台渲染。",
+        "operationId": "get_visual_report",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户唯一标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "生成成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "image_url": {
+                      "type": "string",
+                      "description": "生成的报表图片URL"
+                    },
+                    "tips": {
+                      "type": "string",
+                      "description": "给智能体的渲染提示"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "验证错误"
+          },
+          "500": {
+            "description": "图片生成失败"
+          }
+        }
+      }
+    },
+    "/analysis/toxic_prediction": {
+      "get": {
+        "summary": "毒舌AI财运预测",
+        "description": "基于当前消费进度，提供“毒舌”风格的月底支出预测与点评。",
+        "operationId": "get_toxic_prediction",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "description": "用户唯一标识",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "budget",
+            "in": "query",
+            "description": "月度预算",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "float",
+              "default": 2000.0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "预测成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "report": {
+                      "type": "string",
+                      "description": "Markdown格式的预测报告"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "验证错误"
+          }
+        }
+      }
+    }
+  }
+}
