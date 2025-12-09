@@ -64,7 +64,7 @@
 
 ### 2. 查账 (Read Expenses)
 
-查询指定用户的消费记录列表，支持按日期范围筛选。
+查询指定用户的消费记录列表，支持按日期范围、特定日期或分类筛选。
 
 - **URL**: `/expenses/`
 - **Method**: `GET`
@@ -73,11 +73,20 @@
 | 参数名 | 类型 | 必选 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `user_id` | string | 是 | 用户唯一标识 |
-| `start_date` | datetime | 否 | 开始日期 (ISO格式) |
-| `end_date` | datetime | 否 | 结束日期 (ISO格式) |
+| `start_date` | datetime | 否 | 开始日期 (ISO格式)，例如 `2023-10-01` |
+| `end_date` | datetime | 否 | 结束日期 (ISO格式)，例如 `2023-10-31` |
+| `category` | string | 否 | 消费分类，例如 `餐饮`、`交通` |
+| `date` | datetime | 否 | 特定日期 (ISO格式)，例如 `2023-10-27` (查询该日所有记录) |
 
 **请求示例**:
-`GET /expenses/?user_id=student_001&start_date=2023-10-01`
+1. **按时间范围查询**:
+   `GET /expenses/?user_id=student_001&start_date=2023-10-01&end_date=2023-10-31`
+
+2. **按分类查询**:
+   `GET /expenses/?user_id=student_001&category=餐饮`
+
+3. **查询特定日期**:
+   `GET /expenses/?user_id=student_001&date=2023-10-27`
 
 **响应示例 (200 OK)**:
 

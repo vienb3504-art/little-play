@@ -16,13 +16,22 @@ def create_user_expense(db: Session, expense: schemas.ExpenseCreate):
     db.refresh(db_expense)
     return db_expense
 
-def get_expenses(db: Session, user_id: str, start_date: datetime = None, end_date: datetime = None):
+def get_expenses(db: Session, user_id: str, start_date: datetime = None, end_date: datetime = None, category: str = None, target_date: datetime = None):
     query = db.query(models.Expense).filter(models.Expense.user_id == user_id)
     
-    if start_date:
-        query = query.filter(models.Expense.transaction_date >= start_date)
-    if end_date:
-        query = query.filter(models.Expense.transaction_date <= end_date)
+    if category:
+        query = query.filter(models.Expense.category == category)
+        
+    if target_date:
+        # Filter by specific date (ignoring time)
+        # Using cast to date for SQLite compatibility
+        query = query.filter(func.date(models.Expense.transaction_date) == target_date.date())
+    else:
+        # Only apply range if target_date is not set (or they can coexist, but usually mutually exclusive logic is clearer)
+        if start_date:
+            query = query.filter(models.Expense.transaction_date >= start_date)
+        if end_date:
+            query = query.filter(models.Expense.transaction_date <= end_date)
         
     return query.all()
 

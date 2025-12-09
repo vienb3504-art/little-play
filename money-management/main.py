@@ -64,11 +64,20 @@ def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)
 @app.get("/expenses/", response_model=List[schemas.Expense])
 def read_expenses(
     user_id: str = Query(..., description="The ID of the user to retrieve expenses for"),
-    start_date: Optional[datetime] = Query(None),
-    end_date: Optional[datetime] = Query(None),
+    start_date: Optional[datetime] = Query(None, description="Filter by start date (YYYY-MM-DD)"),
+    end_date: Optional[datetime] = Query(None, description="Filter by end date (YYYY-MM-DD)"),
+    category: Optional[str] = Query(None, description="Filter by category (e.g. 餐饮, 交通)"),
+    date: Optional[datetime] = Query(None, description="Filter by specific date (YYYY-MM-DD)"),
     db: Session = Depends(get_db)
 ):
-    return crud.get_expenses(db, user_id=user_id, start_date=start_date, end_date=end_date)
+    return crud.get_expenses(
+        db, 
+        user_id=user_id, 
+        start_date=start_date, 
+        end_date=end_date,
+        category=category,
+        target_date=date
+    )
 
 @app.get("/report/weekly")
 def read_weekly_report(
@@ -158,3 +167,7 @@ def get_toxic_prediction(
         
     report = analysis_service.toxic_prediction(expense_list, budget)
     return {"report": report}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
