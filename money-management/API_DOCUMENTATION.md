@@ -64,8 +64,9 @@
 
 ### 2. 查账 (Read Expenses)
 
-查询指定用户的消费记录列表，支持按日期范围、特定日期或分类筛选。
+查询指定用户的消费记录列表。
 
+- **逻辑**: 如果不指定 `date` 参数，默认返回**最近 7 天**的记录。
 - **URL**: `/expenses/`
 - **Method**: `GET`
 - **Query Parameters**:
@@ -73,14 +74,12 @@
 | 参数名 | 类型 | 必选 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `user_id` | string | 是 | 用户唯一标识 |
-| `start_date` | datetime | 否 | 开始日期 (ISO格式)，例如 `2023-10-01` |
-| `end_date` | datetime | 否 | 结束日期 (ISO格式)，例如 `2023-10-31` |
 | `category` | string | 否 | 消费分类，例如 `餐饮`、`交通` |
 | `date` | datetime | 否 | 特定日期 (ISO格式)，例如 `2023-10-27` (查询该日所有记录) |
 
 **请求示例**:
-1. **按时间范围查询**:
-   `GET /expenses/?user_id=student_001&start_date=2023-10-01&end_date=2023-10-31`
+1. **默认查询 (最近7天)**:
+   `GET /expenses/?user_id=student_001`
 
 2. **按分类查询**:
    `GET /expenses/?user_id=student_001&category=餐饮`
@@ -104,9 +103,36 @@
 ]
 ```
 
----
+### 3. 删除消费 (Delete Expenses)
 
-### 3. 周报统计 (Weekly Report)
+删除消费记录。可以通过日期删除当天的所有记录，或者通过ID删除单条记录。
+
+- **URL**: `/expenses/`
+- **Method**: `DELETE`
+- **Query Parameters** (二选一必填):
+
+| 参数名 | 类型 | 必选 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `user_id` | string | 是 | 用户唯一标识 |
+| `date` | datetime | 否 | 删除该日期的所有记录 (ISO格式)，例如 `2023-10-27` |
+| `expense_id` | integer | 否 | 删除指定 ID 的单条记录，例如 `1` |
+
+**请求示例**:
+
+1. **按日期删除 (删除一天)**:
+   `DELETE /expenses/?user_id=student_001&date=2023-10-27`
+
+2. **按ID删除 (删除一条)**:
+   `DELETE /expenses/?user_id=student_001&expense_id=42`
+
+**响应示例 (200 OK)**:
+```json
+{
+  "message": "Deleted 1 expenses."
+}
+```
+
+### 4. 周报统计 (Weekly Report)
 
 获取按类别聚合的消费统计数据。
 

@@ -35,16 +35,19 @@
 - **输出格式**: Markdown 格式的文本报告。
 - **API 接口**: `GET /analysis/toxic_prediction?user_id={user_id}&budget={budget}`
 
-### 3. 🔍 增强型查账 (Enhanced Query)
+### 3. 🔍 增强型查账 (Enhanced Query) & 删除
 
-查账接口全面升级，支持更细粒度的筛选，满足用户多维度的查询需求。
+查账接口逻辑优化，并新增了数据删除能力。
 
-- **功能描述**: 在原有基础上，新增了按**分类**和**特定日期**查询的功能。
+- **查账逻辑变更**: 默认不再返回所有数据，而是**最近 7 天**的记录。
 - **查询维度**:
-  - **按分类**: 例如查询所有“餐饮”类别的消费。
-  - **按日期**: 查询某一天的所有消费记录（如 `2023-10-27`）。
-  - **按范围**: 保持原有的日期范围查询。
-- **API 接口**: `GET /expenses/?user_id={user_id}&category={category}&date={date}`
+  - **按分类**: 筛选特定分类（如“餐饮”）。
+  - **按日期**: 查询某一天的详细账单。
+- **新增接口**: `DELETE /expenses/`
+  - **功能**: 支持按**日期**批量删除或按 **ID** 删除单条记录。
+- **API 接口**: 
+  - 查询: `GET /expenses/?user_id={user_id}&category={category}&date={date}`
+  - 删除: `DELETE /expenses/?user_id={user_id}&date={date}&expense_id={id}`
 
 ## 🛠 技术栈与架构更新
 

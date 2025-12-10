@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 import models, schemas
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def create_user_expense(db: Session, expense: schemas.ExpenseCreate):
     db_expense = models.Expense(
@@ -16,7 +16,7 @@ def create_user_expense(db: Session, expense: schemas.ExpenseCreate):
     db.refresh(db_expense)
     return db_expense
 
-def get_expenses(db: Session, user_id: str, start_date: datetime = None, end_date: datetime = None, category: str = None, target_date: datetime = None):
+def get_expenses(db: Session, user_id: str, category: str = None, target_date: datetime = None):
     query = db.query(models.Expense).filter(models.Expense.user_id == user_id)
     
     if category:
@@ -24,16 +24,30 @@ def get_expenses(db: Session, user_id: str, start_date: datetime = None, end_dat
         
     if target_date:
         # Filter by specific date (ignoring time)
-        # Using cast to date for SQLite compatibility
         query = query.filter(func.date(models.Expense.transaction_date) == target_date.date())
     else:
-        # Only apply range if target_date is not set (or they can coexist, but usually mutually exclusive logic is clearer)
-        if start_date:
-            query = query.filter(models.Expense.transaction_date >= start_date)
-        if end_date:
-            query = query.filter(models.Expense.transaction_date <= end_date)
+        # Default: Last 7 days
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        query = query.filter(models.Expense.transaction_date >= seven_days_ago)
         
     return query.all()
+
+def delete_expenses(db: Session, user_id: str, target_date: datetime = None, expense_id: int = None):
+    query = db.query(models.Expense).filter(models.Expense.user_id == user_id)
+    
+    if expense_id:
+        # Delete single record by ID
+        query = query.filter(models.Expense.id == expense_id)
+    elif target_date:
+        # Delete all records for the date
+        query = query.filter(func.date(models.Expense.transaction_date) == target_date.date())
+    else:
+        # Safety guard: Do not allow deleting everything without specific criteria
+        return 0
+    
+    count = query.delete(synchronize_session=False)
+    db.commit()
+    return count
 
 def get_weekly_report(db: Session, user_id: str):
     # In a real world scenario, we would filter by the current week's date range here.
