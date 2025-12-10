@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "智能校园记账助手",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "基于FastAPI构建的校园记账助手后端服务，支持多租户数据隔离，提供记账、查账、可视化周报生成及毒舌财运预测功能。"
   },
   "servers": [
@@ -102,7 +102,7 @@
       },
       "get": {
         "summary": "查询消费记录",
-        "description": "查询指定用户的消费记录列表。如果不指定日期，默认返回最近7天的记录。",
+        "description": "查询指定用户的消费记录列表。支持按分类和日期筛选。如果不指定日期，默认返回最近7天的记录。",
         "operationId": "read_expenses",
         "parameters": [
           {
