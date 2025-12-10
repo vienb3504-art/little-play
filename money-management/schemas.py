@@ -21,3 +21,7 @@ class Expense(ExpenseBase):
 
     class Config:
         orm_mode = True
+
+class ExpenseResponse(BaseModel):
+    expenses: list[Expense]
+

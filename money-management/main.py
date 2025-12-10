@@ -57,25 +57,26 @@ def get_db():
     finally:
         db.close()
 
-@app.post("/expenses/", response_model=schemas.Expense)
+@app.post("/expenses/add", response_model=schemas.Expense)
 def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)):
     return crud.create_user_expense(db=db, expense=expense)
 
-@app.get("/expenses/", response_model=List[schemas.Expense])
+@app.get("/expenses/query", response_model=schemas.ExpenseResponse)
 def read_expenses(
     user_id: str = Query(..., description="The ID of the user to retrieve expenses for"),
     category: Optional[str] = Query(None, description="Filter by category (e.g. 餐饮, 交通)"),
     date: Optional[datetime] = Query(None, description="Filter by specific date (YYYY-MM-DD). If not provided, returns last 7 days."),
     db: Session = Depends(get_db)
 ):
-    return crud.get_expenses(
+    expenses = crud.get_expenses(
         db, 
         user_id=user_id, 
         category=category,
         target_date=date
     )
+    return {"expenses": expenses}
 
-@app.delete("/expenses/")
+@app.delete("/expenses/delete")
 def delete_expenses(
     user_id: str = Query(..., description="The ID of the user"),
     date: Optional[datetime] = Query(None, description="Delete all expenses on this date (YYYY-MM-DD)"),

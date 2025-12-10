@@ -97,7 +97,7 @@
                     </div>
                     <button @click="fetchExpenses" :disabled="loading" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition disabled:opacity-50 flex justify-between items-center">
                         <span>查询账单列表</span>
-                        <span class="text-xs opacity-75">GET /expenses/</span>
+                        <span class="text-xs opacity-75">GET /expenses/query</span>
                     </button>
                     <button @click="fetchReport" :disabled="loading" class="w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 transition disabled:opacity-50 flex justify-between items-center">
                         <span>查看周报统计</span>
@@ -201,7 +201,7 @@
                             item_name: expenseForm.item_name
                         };
 
-                        const res = await fetch(`${API_BASE}/expenses/`, {
+                        const res = await fetch(`${API_BASE}/expenses/add`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
@@ -227,7 +227,7 @@
                     if (!userId.value) return alert('请输入 User ID');
                     loading.value = true;
                     try {
-                        let url = `${API_BASE}/expenses/?user_id=${userId.value}`;
+                        let url = `${API_BASE}/expenses/query?user_id=${userId.value}`;
                         if (queryDate.value) url += `&date=${queryDate.value}`;
                         if (queryCategory.value) url += `&category=${queryCategory.value}`;
                         
@@ -259,7 +259,7 @@
                     if (!userId.value) return alert('请输入 User ID');
                     loading.value = true;
                     try {
-                        const res = await fetch(`${API_BASE}/expenses/?user_id=${userId.value}&${queryString}`, {
+                        const res = await fetch(`${API_BASE}/expenses/delete?user_id=${userId.value}&${queryString}`, {
                             method: 'DELETE'
                         });
                         const data = await res.json();

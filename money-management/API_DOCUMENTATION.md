@@ -90,17 +90,19 @@
 **响应示例 (200 OK)**:
 
 ```json
-[
-  {
-    "user_id": "student_001",
-    "amount": 25.5,
-    "category": "餐饮",
-    "item_name": "黄焖鸡米饭",
-    "transaction_date": "2023-10-27T12:30:00",
-    "id": 1,
-    "created_at": "2023-10-27T12:30:00"
-  }
-]
+{
+  "expenses": [
+    {
+      "user_id": "student_001",
+      "amount": 25.5,
+      "category": "餐饮",
+      "item_name": "黄焖鸡米饭",
+      "transaction_date": "2023-10-27T12:30:00",
+      "id": 1,
+      "created_at": "2023-10-27T12:30:00"
+    }
+  ]
+}
 ```
 
 ### 3. 删除消费 (Delete Expenses)
