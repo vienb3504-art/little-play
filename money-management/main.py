@@ -69,15 +69,22 @@ def create_expense(expense: schemas.ExpenseCreate, db: Session = Depends(get_db)
 def read_expenses(
     user_id: str = Query(..., description="The ID of the user to retrieve expenses for"),
     category: Optional[str] = Query(None, description="Filter by category (e.g. 餐饮, 交通)"),
-    date: Optional[datetime] = Query(None, description="Filter by specific date (YYYY-MM-DD). If not provided, returns last 7 days."),
+    date: Optional[str] = Query(None, description="Filter by specific date (YYYY-MM-DD). If not provided, returns last 7 days."),
     limit: Optional[int] = Query(None, description="Limit the number of results returned. If provided, results are sorted by latest time first."),
     db: Session = Depends(get_db)
 ):
+    target_date = None
+    if date:
+        try:
+            target_date = datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+             raise HTTPException(status_code=422, detail="Invalid date format. Use YYYY-MM-DD")
+
     expenses = crud.get_expenses(
         db, 
         user_id=user_id, 
         category=category,
-        target_date=date,
+        target_date=target_date,
         limit=limit
     )
     return {"expenses": expenses}
@@ -85,14 +92,21 @@ def read_expenses(
 @app.get("/expenses/delete")
 def delete_expenses(
     user_id: str = Query(..., description="The ID of the user"),
-    date: Optional[datetime] = Query(None, description="Delete all expenses on this date (YYYY-MM-DD)"),
+    date: Optional[str] = Query(None, description="Delete all expenses on this date (YYYY-MM-DD)"),
     expense_id: Optional[int] = Query(None, description="Delete a specific expense by ID"),
     db: Session = Depends(get_db)
 ):
-    if not date and not expense_id:
+    target_date = None
+    if date:
+        try:
+            target_date = datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+             raise HTTPException(status_code=422, detail="Invalid date format. Use YYYY-MM-DD")
+
+    if not target_date and not expense_id:
         raise HTTPException(status_code=400, detail="Must provide either 'date' or 'expense_id' to delete.")
         
-    count = crud.delete_expenses(db, user_id=user_id, target_date=date, expense_id=expense_id)
+    count = crud.delete_expenses(db, user_id=user_id, target_date=target_date, expense_id=expense_id)
     
     if count == 0:
         return {"message": "No records found to delete."}
