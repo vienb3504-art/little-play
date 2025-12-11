@@ -66,13 +66,15 @@ def read_expenses(
     user_id: str = Query(..., description="The ID of the user to retrieve expenses for"),
     category: Optional[str] = Query(None, description="Filter by category (e.g. 餐饮, 交通)"),
     date: Optional[datetime] = Query(None, description="Filter by specific date (YYYY-MM-DD). If not provided, returns last 7 days."),
+    limit: Optional[int] = Query(None, description="Limit the number of results returned. If provided, results are sorted by latest time first."),
     db: Session = Depends(get_db)
 ):
     expenses = crud.get_expenses(
         db, 
         user_id=user_id, 
         category=category,
-        target_date=date
+        target_date=date,
+        limit=limit
     )
     return {"expenses": expenses}
 

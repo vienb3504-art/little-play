@@ -22,7 +22,7 @@
 
 创建一条新的消费记录。
 
-- **URL**: `/expenses/`
+- **URL**: `/expenses/add`
 - **Method**: `POST`
 - **Request Body (JSON)**:
 
@@ -67,25 +67,22 @@
 查询指定用户的消费记录列表。
 
 - **逻辑**: 如果不指定 `date` 参数，默认返回**最近 7 天**的记录。
-- **URL**: `/expenses/`
+- **URL**: `/expenses/query`
 - **Method**: `GET`
-- **Query Parameters**:
+**参数**:
 
-| 参数名 | 类型 | 必选 | 说明 |
-| :--- | :--- | :--- | :--- |
-| `user_id` | string | 是 | 用户唯一标识 |
-| `category` | string | 否 | 消费分类，例如 `餐饮`、`交通` |
-| `date` | datetime | 否 | 特定日期 (ISO格式)，例如 `2023-10-27` (查询该日所有记录) |
+| 参数名 | 位置 | 类型 | 必填 | 描述 |
+|---|---|---|---|---|
+| user_id | Query | string | 是 | 用户唯一标识 |
+| category | Query | string | 否 | 消费分类 (如: 餐饮, 交通) |
+| date | Query | string | 否 | 特定日期 (ISO格式, YYYY-MM-DD)。如果不指定，默认返回最近7天的记录。 |
+| limit | Query | integer | 否 | 返回条数限制。如果提供，将按时间倒序返回最近的记录。 |
 
 **请求示例**:
-1. **默认查询 (最近7天)**:
-   `GET /expenses/?user_id=student_001`
 
-2. **按分类查询**:
-   `GET /expenses/?user_id=student_001&category=餐饮`
-
-3. **查询特定日期**:
-   `GET /expenses/?user_id=student_001&date=2023-10-27`
+```http
+GET /expenses/query?user_id=student_001&limit=10
+```
 
 **响应示例 (200 OK)**:
 

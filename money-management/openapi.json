@@ -126,17 +126,26 @@
             }
           },
           {
-            "name": "date",
-            "in": "query",
-            "description": "特定日期 (ISO格式, YYYY-MM-DD)",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "date"
-            }
-          }
-        ],
-        "responses": {
+                "name": "date",
+                "in": "query",
+                "description": "特定日期 (ISO格式, YYYY-MM-DD)",
+                "required": false,
+                "schema": {
+                  "type": "string",
+                  "format": "date"
+                }
+              },
+              {
+                "name": "limit",
+                "in": "query",
+                "description": "返回条数限制。如果提供，将按时间倒序返回最近的记录。",
+                "required": false,
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            ],
+            "responses": {
           "200": {
             "description": "成功的响应",
             "content": {

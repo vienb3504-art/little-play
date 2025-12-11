@@ -94,6 +94,10 @@
                                 <option>其他</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">条数 (可选)</label>
+                            <input v-model.number="queryLimit" type="number" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="限制条数">
+                        </div>
                     </div>
                     <button @click="fetchExpenses" :disabled="loading" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition disabled:opacity-50 flex justify-between items-center">
                         <span>查询账单列表</span>
@@ -170,6 +174,7 @@
                 
                 const queryDate = ref('');
                 const queryCategory = ref('');
+                const queryLimit = ref('');
                 const deleteDate = ref('');
                 const deleteId = ref('');
 
@@ -230,6 +235,7 @@
                         let url = `${API_BASE}/expenses/query?user_id=${userId.value}`;
                         if (queryDate.value) url += `&date=${queryDate.value}`;
                         if (queryCategory.value) url += `&category=${queryCategory.value}`;
+                        if (queryLimit.value) url += `&limit=${queryLimit.value}`;
                         
                         const res = await fetch(url);
                         const data = await res.json();
@@ -292,6 +298,7 @@
                     logs,
                     queryDate, 
                     queryCategory, 
+                    queryLimit,
                     deleteDate, 
                     deleteId,
                     createExpense,

@@ -16,7 +16,7 @@ def create_user_expense(db: Session, expense: schemas.ExpenseCreate):
     db.refresh(db_expense)
     return db_expense
 
-def get_expenses(db: Session, user_id: str, category: str = None, target_date: datetime = None):
+def get_expenses(db: Session, user_id: str, category: str = None, target_date: datetime = None, limit: int = None):
     query = db.query(models.Expense).filter(models.Expense.user_id == user_id)
     
     if category:
@@ -25,10 +25,14 @@ def get_expenses(db: Session, user_id: str, category: str = None, target_date: d
     if target_date:
         # Filter by specific date (ignoring time)
         query = query.filter(func.date(models.Expense.transaction_date) == target_date.date())
-    else:
-        # Default: Last 7 days
+    elif not limit:
+        # Default: Last 7 days (Only if no specific date AND no limit provided)
         seven_days_ago = datetime.now() - timedelta(days=7)
         query = query.filter(models.Expense.transaction_date >= seven_days_ago)
+    
+    if limit:
+        # Sort by latest time and limit results
+        query = query.order_by(models.Expense.transaction_date.desc()).limit(limit)
         
     return query.all()
 
