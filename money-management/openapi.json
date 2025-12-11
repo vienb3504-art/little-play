@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:8000",
+      "url": "http://127.0.0.1:9090",
       "description": "本地开发服务器"
     }
   ],
@@ -126,26 +126,26 @@
             }
           },
           {
-                "name": "date",
-                "in": "query",
-                "description": "特定日期 (ISO格式, YYYY-MM-DD)",
-                "required": false,
-                "schema": {
-                  "type": "string",
-                  "format": "date"
-                }
-              },
-              {
-                "name": "limit",
-                "in": "query",
-                "description": "返回条数限制。如果提供，将按时间倒序返回最近的记录。",
-                "required": false,
-                "schema": {
-                  "type": "integer"
-                }
-              }
-            ],
-            "responses": {
+            "name": "date",
+            "in": "query",
+            "description": "特定日期 (ISO格式, YYYY-MM-DD)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "返回条数限制。如果提供，将按时间倒序返回最近的记录。",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
           "200": {
             "description": "成功的响应",
             "content": {
@@ -193,7 +193,7 @@
       }
     },
     "/expenses/delete": {
-      "delete": {
+      "get": {
         "summary": "删除消费记录",
         "description": "删除消费记录。可以通过日期删除当天的所有记录，或者通过ID删除单条记录。",
         "operationId": "delete_expenses",
@@ -392,7 +392,7 @@
                   "properties": {
                     "report": {
                       "type": "string",
-                      "description": "Markdown格式的预测报告"
+                      "description": "毒舌预测内容"
                     }
                   }
                 }

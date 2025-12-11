@@ -102,13 +102,13 @@ GET /expenses/query?user_id=student_001&limit=10
 }
 ```
 
-### 3. 删除消费 (Delete Expenses)
+### 3. 删除记录 (Delete Expenses)
 
-删除消费记录。可以通过日期删除当天的所有记录，或者通过ID删除单条记录。
+删除消费记录。
 
-- **URL**: `/expenses/`
-- **Method**: `DELETE`
-- **Query Parameters** (二选一必填):
+- **URL**: `/expenses/delete`
+- **Method**: `GET`
+- **参数**:
 
 | 参数名 | 类型 | 必选 | 说明 |
 | :--- | :--- | :--- | :--- |
@@ -118,11 +118,9 @@ GET /expenses/query?user_id=student_001&limit=10
 
 **请求示例**:
 
-1. **按日期删除 (删除一天)**:
-   `DELETE /expenses/?user_id=student_001&date=2023-10-27`
-
-2. **按ID删除 (删除一条)**:
-   `DELETE /expenses/?user_id=student_001&expense_id=42`
+```http
+GET /expenses/delete?user_id=student_001&expense_id=1
+```
 
 **响应示例 (200 OK)**:
 ```json

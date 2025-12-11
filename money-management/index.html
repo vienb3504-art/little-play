@@ -114,7 +114,7 @@
             <div class="bg-white rounded-xl shadow-md p-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <span class="bg-red-100 text-red-600 p-2 rounded-full mr-2">🗑️</span> 
-                    删除操作 (DELETE)
+                    删除操作 (GET)
                 </h2>
                 <div class="space-y-4">
                     <!-- Delete by Date -->
@@ -266,7 +266,7 @@
                     loading.value = true;
                     try {
                         const res = await fetch(`${API_BASE}/expenses/delete?user_id=${userId.value}&${queryString}`, {
-                            method: 'DELETE'
+                            method: 'GET'
                         });
                         const data = await res.json();
                         if (res.ok) {

@@ -22,7 +22,11 @@ logger = logging.getLogger(__name__)
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Smart Campus Accounting Assistant")
+app = FastAPI(
+    title="智能校园记账助手",
+    description="基于FastAPI构建的校园记账助手后端服务，支持多租户数据隔离，提供记账、查账、可视化周报生成及毒舌财运预测功能。",
+    version="1.2.0"
+)
 
 # Mount static directory for image serving
 # Ensure static directory exists
@@ -78,7 +82,7 @@ def read_expenses(
     )
     return {"expenses": expenses}
 
-@app.delete("/expenses/delete")
+@app.get("/expenses/delete")
 def delete_expenses(
     user_id: str = Query(..., description="The ID of the user"),
     date: Optional[datetime] = Query(None, description="Delete all expenses on this date (YYYY-MM-DD)"),
@@ -186,4 +190,4 @@ def get_toxic_prediction(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=9090)
