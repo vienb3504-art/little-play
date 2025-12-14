@@ -18,19 +18,19 @@ def test_features():
     
     today = datetime.date.today()
     expenses = [
-        {"item-name": "Starbucks Coffee", "amount": 35.0, "category": "餐饮", "date": today.strftime("%Y-%m-%d")},
-        {"item-name": "Subway Lunch", "amount": 25.0, "category": "餐饮", "date": today.strftime("%Y-%m-%d")},
-        {"item-name": "Taxi", "amount": 45.0, "category": "交通", "date": (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")},
-        {"item-name": "Books", "amount": 120.0, "category": "学习", "date": (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d")},
-        {"item-name": "Game", "amount": 299.0, "category": "娱乐", "date": (today - datetime.timedelta(days=3)).strftime("%Y-%m-%d")},
+        {"item_name": "Starbucks Coffee", "amount": 35.0, "category": "餐饮", "date": today.strftime("%Y-%m-%d")},
+        {"item_name": "Subway Lunch", "amount": 25.0, "category": "餐饮", "date": today.strftime("%Y-%m-%d")},
+        {"item_name": "Taxi", "amount": 45.0, "category": "交通", "date": (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")},
+        {"item_name": "Books", "amount": 120.0, "category": "学习", "date": (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d")},
+        {"item_name": "Game", "amount": 299.0, "category": "娱乐", "date": (today - datetime.timedelta(days=3)).strftime("%Y-%m-%d")},
     ]
 
     for e in expenses:
-        response = client.post("/expenses/", json={
+        response = client.post("/expenses/add", json={
             "user_id": user_id,
             "amount": e["amount"],
             "category": e["category"],
-            "item-name": e["item-name"],
+            "item_name": e["item_name"],
             "transaction_date": f"{e['date']}T12:00:00"
         })
         if response.status_code != 200:
@@ -57,15 +57,11 @@ def test_features():
     response = client.get(f"/analysis/visual_report?user_id={user_id}")
     if response.status_code == 200:
         data = response.json()
-        b64_str = data.get("image_base64")
-        if b64_str:
-            # Save to file
-            output_file = "test_report_result.png"
-            with open(output_file, "wb") as f:
-                f.write(base64.b64decode(b64_str))
-            print(f"Success! Visual report saved to: {os.path.abspath(output_file)}")
+        image_url = data.get("image_url")
+        if image_url:
+            print(f"Success! Visual report URL: {image_url}")
         else:
-            print("Error: No image data returned.")
+            print("Error: No image URL returned.")
     else:
         print(f"Error: {response.status_code} - {response.text}")
 

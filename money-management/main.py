@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -32,6 +32,10 @@ app = FastAPI(
 # Ensure static directory exists
 os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+async def read_root():
+    return FileResponse("index.html")
 
 # Enable CORS
 app.add_middleware(
@@ -87,6 +91,11 @@ def read_expenses(
         target_date=target_date,
         limit=limit
     )
+    # Debugging
+    if expenses:
+        print(f"DEBUG: First expense item_name: {expenses[0].item_name}")
+    print(f"DEBUG: Schema fields: {schemas.Expense.model_fields}")
+    
     return {"expenses": expenses}
 
 @app.get("/expenses/delete")

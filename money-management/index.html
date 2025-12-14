@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能校园记账助手 - 模拟终端</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.staticfile.net/vue/3.3.4/vue.global.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -164,7 +164,8 @@
 
     <script>
         const { createApp, ref, reactive } = Vue;
-        const API_BASE = 'http://127.0.0.1:9090';
+        // 使用相对路径，适配后端服务
+        const API_BASE = ''; 
 
         createApp({
             setup() {
